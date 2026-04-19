@@ -43,7 +43,7 @@ function Products() {
         console.log(data)
     }
 
-    const filterItem = product.filter((item) =>
+    const filterItem = product?.filter((item) =>
         item?.title?.toLowerCase().includes(search?.toLowerCase())
     );
     return (

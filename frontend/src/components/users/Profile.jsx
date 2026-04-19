@@ -9,20 +9,31 @@ const Profile = () => {
 
     useEffect(() => {
         const handleProfile = async () => {
-            const res = await fetch('http://localhost:3000/profile', {
+            let res = await fetch('http://localhost:3000/profile', {
                 method: "GET",
                 headers: { authorization: `Bearer ${localStorage.getItem('token')}` }
-            })
-            const data = await res.json()
-            setProfile(data.profile)
-            if(data.profile){
-                localStorage.setItem('image', JSON.stringify(data.profile.image))
-            }else{
-                data.profile.image === null;
-            }           
-        }
-        handleProfile()
-    }, [])
+            });
+            if (res.status === 401) {
+                const refreshRes = await fetch('http://localhost:3000/refresh-token', {
+                    method: 'POST',
+                    headers: { authorization: `Bearer ${localStorage.getItem('refToken')}` }
+                });
+                const refreshData = await refreshRes.json();
+                localStorage.setItem('token', refreshData.accessToken);
+                res = await fetch('http://localhost:3000/profile', {
+                    method: "GET",
+                    headers: { authorization: `Bearer ${refreshData.accessToken}` }
+                });
+            }
+            const data = await res.json();
+            setProfile(data);
+            console.log(data);
+            if (data.profile) {
+                localStorage.setItem('image', JSON.stringify(data.profile.image));
+            }
+        };
+        handleProfile();
+    }, []);
 
     return (
         <div className="absolute right-4 top-16 z-50">
@@ -30,7 +41,7 @@ const Profile = () => {
                 {/* Profile Image */}
                 <div className="flex justify-center">
                     {
-                        profile? <img src={`http://localhost:3000/profile/${profile?.image}`} alt="profile"
+                        profile.profile ? <img src={`http://localhost:3000/profile/${profile?.profile?.image}`} alt="profile"
                             className="w-24 h-24 rounded-full border-4 border-indigo-100 shadow-sm" />
                             : <CiUser />
                     }
@@ -38,15 +49,15 @@ const Profile = () => {
                 </div>
                 {/* User Info */}
                 <div className="text-center mt-4">
-                    <h1 className="text-xl font-semibold text-gray-800"> {profile ? profile.name : null}</h1>
-                    <p className="text-gray-500 text-sm"> {profile? profile.profession: 'developer'} </p>
+                    <h1 className="text-xl font-semibold text-gray-800"> {profile?.profile ? profile.profile.name : null}</h1>
+                    <p className="text-gray-500 text-sm"> {profile.profile ? profile.profile.profession : 'developer'} </p>
                 </div>
                 {/* Divider */}
                 <hr className="my-5 border-gray-200" />
                 {/* Menu */}
                 <ul className="space-y-3">
                     <li>
-                        <Link to={`/update-profile/${profile?._id}`} className="block w-full text-center bg-gray-100 hover:bg-indigo-50 
+                        <Link to={`/update-profile/${profile?.profile?._id}`} className="block w-full text-center bg-gray-100 hover:bg-indigo-50 
                 ext-gray-700 py-2 rounded-lg transition">   Update Profile   </Link>
                     </li>
                     <li>

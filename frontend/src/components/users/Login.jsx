@@ -18,6 +18,7 @@ function Login() {
         const data = await res.json()
         setShowMessage(data)
         localStorage.setItem('token', data.accessToken);
+        localStorage.setItem('refToken', data.refereshToken);
         if (data.success === true) {
             setTimeout(() => {
                 navigate('/')
