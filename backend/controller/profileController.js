@@ -7,7 +7,7 @@ const path = require('path')
 
 // gerenate JWT Token............................//
 const generateAccessToken = async (user) => {
-    const token = await jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '2h' })
+    const token = await jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1m' })
     return token;
 }
 const generateRefereshToken = async (user) => {
@@ -41,9 +41,6 @@ const handleLogin = async (req, res) => {
         userData.isLogin = true;
         await userData.save()
 
-        if (userData.isLogin) {
-
-        }
         const accessToken = await generateAccessToken({ user: userData })
         const refereshToken = await generateRefereshToken({ user: userData })
         return res.send({
@@ -51,6 +48,7 @@ const handleLogin = async (req, res) => {
             accessToken: accessToken, refereshToken: refereshToken, tokenType: 'Bearer'
 
         })
+        
 
     } catch (err) {
         console.log(err)
@@ -60,7 +58,7 @@ const handleLogin = async (req, res) => {
 
 const handleProfile = async (req, res) => {
     try {
-        const id = req.user.user._id;
+        const id = req.user?.user?._id || req.user.id || req.user.user.id;
         const profileData = await userCollection.findOne({ _id: id })
         if (!profileData) {
             return res.send({ message: "Invalid user", success: false })

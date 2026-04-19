@@ -8,7 +8,7 @@ const controller = require('./controller/userController');
 const { upload } = require('./middleware/multer/multer');
 const email = require('./middleware/mailer/sendMail');
 const profile = require('./controller/profileController');
-const authMiddleware = require('./middleware/auth/auth');
+const {authMiddleware, handleRefereshToken} = require('./middleware/auth/auth');
 const port = process.env.PORT || 4000;
 
 
@@ -36,7 +36,7 @@ app.post('/cart', controller.handleCart)
 // get my Card
 app.get('/myCart', controller.getMyCard)
 // delete my Card
-app.delete('/myCart/:id',authMiddleware, controller.deleteCart)
+app.delete('/myCart/:id', authMiddleware, controller.deleteCart)
 // ...............................................................//
 // gererate otp & Verify
 app.post('/gererate-otp', email.sendOtp)
@@ -54,6 +54,10 @@ app.post('/forgate-password', profile.changePassword)
 app.get('/navigate-profile/:id', profile.navigateProfile)
 //updateProfile
 app.put('/update-profile/:id', upload.single('profileImage'), profile.updateProfile)
+
+
+//.........................//
+app.post('/refresh-token',handleRefereshToken)
 
 app.listen(port, () => {
     console.log(`server is running on Port ${port}`)
