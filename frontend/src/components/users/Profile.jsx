@@ -9,27 +9,37 @@ const Profile = () => {
 
     useEffect(() => {
         const handleProfile = async () => {
-            let res = await fetch('http://localhost:3000/profile', {
-                method: "GET",
-                headers: { authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            if (res.status === 401) {
-                const refreshRes = await fetch('http://localhost:3000/refresh-token', {
-                    method: 'POST',
-                    headers: { authorization: `Bearer ${localStorage.getItem('refToken')}` }
-                });
-                const refreshData = await refreshRes.json();
-                localStorage.setItem('token', refreshData.accessToken);
-                res = await fetch('http://localhost:3000/profile', {
+            try {
+                let res = await fetch('http://localhost:3000/profile', {
                     method: "GET",
-                    headers: { authorization: `Bearer ${refreshData.accessToken}` }
+                    headers: { authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
-            }
-            const data = await res.json();
-            setProfile(data);
-            console.log(data);
-            if (data.profile) {
-                localStorage.setItem('image', JSON.stringify(data.profile.image));
+                if (res.status === 401 || res.status === 403) {
+                    const refreshRes = await fetch('http://localhost:3000/refresh-token', {
+                        method: 'POST',
+                        headers: { authorization: `Bearer ${localStorage.getItem('refToken')}` },
+                    });
+                    const refreshData = await refreshRes.json();
+                    localStorage.setItem('token', refreshData.accessToken);
+
+                    res = await fetch('http://localhost:3000/profile', {
+                        method: "GET",
+                        headers: { authorization: `Bearer ${refreshData.accessToken}` }
+                    });
+                }
+                const data = await res.json();
+                setProfile(data);
+                if (data.profile) {
+                    localStorage.setItem('image', JSON.stringify(data.profile.image));
+                }
+
+                // const logoutApi = await fetch('http://localhost:3000/logout',{
+                //     method : 'GET',
+                //     headers: { authorization: `Bearer ${refreshData.accessToken}` }
+                // })
+                // const logoutData =await logoutApis.json()
+            } catch (err) {
+                console.log("Error:", err);
             }
         };
         handleProfile();
